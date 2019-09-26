@@ -19,8 +19,8 @@ from learning!
 
 ## Differences with the original kubernetes-the-hard-way
 
-The main difference is that to use OpenStack as the IaaS provider but there are
-also some other differences:
+The main difference is that instead Google Cloud, OpenStack is used as the IaaS
+provider but there are also some other differences:
 
 * CentOS 7 instead Ubuntu as the operating system of the instances.
 * Dedicated instance for load balancing (with HAProxy).
