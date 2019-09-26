@@ -239,10 +239,13 @@ ssh -i ~/.ssh/k8s.pem centos@controller-0.${DOMAIN} \
 > output
 
 ```
-NAME               STATUS   ROLES    AGE   VERSION
-worker-0.k8s.lan   Ready    <none>   43s   v1.15.3
-worker-1.k8s.lan   Ready    <none>   43s   v1.15.3
-worker-2.k8s.lan   Ready    <none>   43s   v1.15.3
+NAME               STATUS     ROLES    AGE   VERSION
+worker-0.k8s.lan   NotReady   <none>   17s   v1.15.3
+worker-1.k8s.lan   NotReady   <none>   17s   v1.15.3
+worker-2.k8s.lan   NotReady   <none>   17s   v1.15.3
 ```
+
+**NOTE:** The nodes are 'NotReady' because there is no CNI configured yet.
+This will be fixed in the "Pod Network Routes" chapter.
 
 Next: [Configuring kubectl for Remote Access](10-configuring-kubectl.md)

@@ -59,10 +59,13 @@ kubectl get nodes
 > output
 
 ```
-NAME               STATUS   ROLES    AGE     VERSION
-worker-0.k8s.lan   Ready    <none>   2m51s   v1.15.3
-worker-1.k8s.lan   Ready    <none>   2m51s   v1.15.3
-worker-2.k8s.lan   Ready    <none>   2m51s   v1.15.3
+NAME               STATUS     ROLES    AGE   VERSION
+worker-0.k8s.lan   NotReady   <none>   17s   v1.15.3
+worker-1.k8s.lan   NotReady   <none>   17s   v1.15.3
+worker-2.k8s.lan   NotReady   <none>   17s   v1.15.3
 ```
+
+**NOTE:** The nodes are 'NotReady' because there is no CNI configured yet.
+This will be fixed in the "Pod Network Routes" chapter.
 
 Next: [Provisioning Pod Network Routes](11-pod-network-routes.md)

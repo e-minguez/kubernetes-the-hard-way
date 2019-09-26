@@ -35,7 +35,7 @@ DOMAIN="k8s.lan" \
 CLUSTERCIDR=10.200.0.0/16 \
 APISERVER="https://k8sosp.${DOMAIN}:6443" \
 sh -c 'curl https://raw.githubusercontent.com/cloudnativelabs/kube-router/master/daemonset/generic-kuberouter-all-features.yaml -o - | \
-sed -e "s;%APISERVER%;$APISERVER;g" -e "s;%CLUSTERCIDR%;$CLUSTERCIDR;g" | \
+sed -e "s;%APISERVER%;$APISERVER;g" -e "s;%CLUSTERCIDR%;$CLUSTERCIDR;g"' | \
 kubectl apply -f -
 ```
 
@@ -50,5 +50,20 @@ clusterrolebinding.rbac.authorization.k8s.io/kube-router created
 ```
 
 **IMPORTANT:** If for some reason you need to reinstall kube-router or change the config, check the `/var/lib/kube-router/kubeconfig` file on the workers. That's initialized when kube-router is installed, and stays there even if you remove it, so if you change addresses, make sure that file is up to date.
+
+The nodes will be available now:
+
+```
+kubectl get nodes
+```
+
+> output
+
+```
+NAME               STATUS   ROLES    AGE     VERSION
+worker-0.k8s.lan   Ready    <none>   3m55s   v1.15.3
+worker-1.k8s.lan   Ready    <none>   3m55s   v1.15.3
+worker-2.k8s.lan   Ready    <none>   3m55s   v1.15.3
+```
 
 Next: [Deploying the DNS Cluster Add-on](12-dns-addon.md)
