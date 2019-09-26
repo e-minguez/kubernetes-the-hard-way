@@ -19,12 +19,13 @@ from learning!
 
 ## Differences with the original kubernetes-the-hard-way
 
-The main difference is the IaaS provider is OpenStack but there are also some
-other differences:
+The main difference is that to use OpenStack as the IaaS provider but there are
+also some other differences:
 
-* Dedicated instance for load balancing (with HAProxy)
-* Dedicated instance for internal DNS (with bind)
-* `kube-router` instead `kube-proxy` + manual routes in the IaaS
+* CentOS 7 instead Ubuntu as the operating system of the instances.
+* Dedicated instance for load balancing (with HAProxy).
+* Dedicated instance for internal DNS (with bind).
+* `kube-router` instead of `kube-proxy` + manual routes in the IaaS
 
 ## Target Audience
 
