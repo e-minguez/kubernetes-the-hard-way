@@ -6,7 +6,7 @@ This tutorial leverages the [OpenStack Platform](https://www.openstack.org/) to
 streamline provisioning of the compute infrastructure required to bootstrap a
 Kubernetes cluster from the ground up.
 
-The OpenStack Platform environment requires a project (tenant) to stores the
+The OpenStack Platform environment requires a project (tenant) to store the
 required instances that are to install Kubernetes. This project requires
 ownership by a user and role of that user to be set to member.
 
@@ -86,6 +86,6 @@ chmod 600 ~/.ssh/k8s.pem
 
 ![tmux screenshot](images/tmux-screenshot.png)
 
-> Enable `synchronize-panes`: `ctrl+b` then `shift :`. Then type `set synchronize-panes on` at the prompt. To disable synchronization: `set synchronize-panes off`.
+> Enable synchronize-panes by pressing `ctrl+b` followed by `shift+:`. Next type `set synchronize-panes on` at the prompt. To disable synchronization: `set synchronize-panes off`.
 
 Next: [Installing the Client Tools](02-client-tools.md)

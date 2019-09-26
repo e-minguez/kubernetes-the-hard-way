@@ -69,7 +69,7 @@ Delete the router, subnet and network:
 Optionally delete the image:
 
 ```
-openstack image delete CentOS-7-x86_64-GenericCloud-1804_02
+openstack image delete CentOS-7-x86_64-GenericCloud-1907
 ```
 
 ## Project

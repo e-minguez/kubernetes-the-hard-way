@@ -4,7 +4,7 @@ In this lab you will generate [Kubernetes configuration files](https://kubernete
 
 ## Client Authentication Configs
 
-In this section you will generate kubeconfig files for the `controller manager`, `kubelet`, `kube-proxy`, and `scheduler` clients and the `admin` user.
+In this section you will generate kubeconfig files for the `controller manager`, `kubelet` and `scheduler` clients and the `admin` user.
 
 ### Kubernetes Public IP Address
 
@@ -19,6 +19,8 @@ KUBERNETES_PUBLIC_ADDRESS=$(openstack server show k8sosp.${DOMAIN} -f value -c a
 ### The kubelet Kubernetes Configuration File
 
 When generating kubeconfig files for Kubelets the client certificate matching the Kubelet's node name must be used. This will ensure Kubelets are properly authorized by the Kubernetes [Node Authorizer](https://kubernetes.io/docs/admin/authorization/node/).
+
+> The following commands must be run in the same directory used to generate the SSL certificates during the [Generating TLS Certificates](04-certificate-authority.md) lab.
 
 Generate a kubeconfig file for each worker node:
 
@@ -51,39 +53,6 @@ Results:
 worker-0.kubeconfig
 worker-1.kubeconfig
 worker-2.kubeconfig
-```
-
-### The kube-proxy Kubernetes Configuration File
-
-Generate a kubeconfig file for the `kube-proxy` service:
-
-```
-{
-  kubectl config set-cluster kubernetes-the-hard-way \
-    --certificate-authority=ca.pem \
-    --embed-certs=true \
-    --server=https://${KUBERNETES_PUBLIC_ADDRESS}:6443 \
-    --kubeconfig=kube-proxy.kubeconfig
-
-  kubectl config set-credentials system:kube-proxy \
-    --client-certificate=kube-proxy.pem \
-    --client-key=kube-proxy-key.pem \
-    --embed-certs=true \
-    --kubeconfig=kube-proxy.kubeconfig
-
-  kubectl config set-context default \
-    --cluster=kubernetes-the-hard-way \
-    --user=system:kube-proxy \
-    --kubeconfig=kube-proxy.kubeconfig
-
-  kubectl config use-context default --kubeconfig=kube-proxy.kubeconfig
-}
-```
-
-Results:
-
-```
-kube-proxy.kubeconfig
 ```
 
 ### The kube-controller-manager Kubernetes Configuration File
@@ -186,16 +155,13 @@ Results:
 admin.kubeconfig
 ```
 
-
-##
-
 ## Distribute the Kubernetes Configuration Files
 
-Copy the appropriate `kubelet` and `kube-proxy` kubeconfig files to each worker instance:
+Copy the appropriate `kubelet` kubeconfig file to each worker instance:
 
 ```
 for instance in worker-0 worker-1 worker-2; do
-  scp -i ~/.ssh/k8s.pem ${instance}.kubeconfig kube-proxy.kubeconfig centos@${instance}.${DOMAIN}:
+  scp -i ~/.ssh/k8s.pem ${instance}.kubeconfig centos@${instance}.${DOMAIN}:
 done
 ```
 
