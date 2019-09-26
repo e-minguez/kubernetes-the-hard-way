@@ -2,36 +2,53 @@
 
 Pods scheduled to a node receive an IP address from the node's Pod CIDR range. At this point pods can not communicate with other pods running on different nodes due to missing network routes.
 
-In this lab you will create a route for each worker node that maps the node's Pod CIDR range to the node's internal IP address.
+In this lab you will deploy [kube-router](https://github.com/cloudnativelabs/kube-router) to handle the network routes.
 
 > There are [other ways](https://kubernetes.io/docs/concepts/cluster-administration/networking/#how-to-achieve-this) to implement the Kubernetes networking model.
 
-## The Routing Table
+## Allow pod traffic in OpenStack
 
-In this section you will gather the information required to create routes in the `kubernetes-the-hard-way` network.
+OpenStack will filter and drop all packets from IPs it does not know to prevent spoofing. This includes the pod and services CIDRs.
 
-Create network routes for each worker instance:
+It is required to allow those IPs for traffic communication:
+
+```
+openstack port list --device-owner=compute:None -c ID -f value | xargs -tI@ openstack port set @ --allowed-address ip-address=10.200.0.0/16 --allowed-address ip-address=10.32.0.0/24
+```
+
+## Label nodes
+
+Kube-router requires a specific annotation (or other methods) to gather the pod-cidr on each node:
 
 ```
 for i in 0 1 2; do
-  SUBNET=$(openstack server show worker-${i}.${DOMAIN} -f value -c properties | awk -F= '{ print $2 }' | tr -d "\'")
-  INTERNAL_IP=$(openstack server show worker-${i}.${DOMAIN} -f value -c addresses | awk -F'[=,]' '{ print $2 }')
-  openstack router set kubernetes-the-hard-way-router --route destination=${SUBNET},gateway=${INTERNAL_IP}
+  kubectl annotate node/worker-${i}.${DOMAIN} "kube-router.io/pod-cidr=10.200.${i}.0/24"
 done
 ```
 
-List the routes in the `kubernetes-the-hard-way-router` router:
+## Deploy kube-router
+
+Then, deploy `kube-router` pods:
 
 ```
-openstack router show kubernetes-the-hard-way-router -f value -c routes
+DOMAIN="k8s.lan" \
+CLUSTERCIDR=10.200.0.0/16 \
+APISERVER="https://k8sosp.${DOMAIN}:6443" \
+sh -c 'curl https://raw.githubusercontent.com/cloudnativelabs/kube-router/master/daemonset/generic-kuberouter-all-features.yaml -o - | \
+sed -e "s;%APISERVER%;$APISERVER;g" -e "s;%CLUSTERCIDR%;$CLUSTERCIDR;g" | \
+kubectl apply -f -
 ```
 
 > output
 
 ```
-destination='10.200.0.0/24', gateway='10.240.0.20'
-destination='10.200.1.0/24', gateway='10.240.0.21'
-destination='10.200.2.0/24', gateway='10.240.0.22'
+configmap/kube-router-cfg created
+daemonset.apps/kube-router created
+serviceaccount/kube-router created
+clusterrole.rbac.authorization.k8s.io/kube-router created
+clusterrolebinding.rbac.authorization.k8s.io/kube-router created
 ```
+
+**IMPORTANT:** If for some reason you need to reinstall kube-router or change the config, check the `/var/lib/kube-router/kubeconfig` file on the workers. That's initialized when kube-router is installed, and stays there even if you remove it, so if you change addresses, make sure that file is up to date.
 
 Next: [Deploying the DNS Cluster Add-on](12-dns-addon.md)

@@ -13,6 +13,19 @@ cluster.
 may receive limited support from the community, but don't let that stop you
 from learning!
 
+## Copyright
+
+<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.
+
+## Differences with the original kubernetes-the-hard-way
+
+The main difference is the IaaS provider is OpenStack but there are also some
+other differences:
+
+* Dedicated instance for load balancing (with HAProxy)
+* Dedicated instance for internal DNS (with bind)
+* `kube-router` instead `kube-proxy` + manual routes in the IaaS
+
 ## Target Audience
 
 The target audience for this tutorial is someone planning to support a
@@ -25,11 +38,11 @@ Kubernetes The Hard Way guides you through bootstrapping a highly available
 Kubernetes cluster with end-to-end encryption between components and RBAC
 authentication.
 
-* [Kubernetes](https://github.com/kubernetes/kubernetes) 1.10.2
-* [containerd Container Runtime](https://github.com/containerd/containerd) 1.1.0
-* [gVisor](https://github.com/google/gvisor) 08879266fef3a67fac1a77f1ea133c3ac75759dd
-* [CNI Container Networking](https://github.com/containernetworking/cni) 0.6.0
-* [etcd](https://github.com/coreos/etcd) 3.3.5
+* [Kubernetes](https://github.com/kubernetes/kubernetes) 1.15.3
+* [containerd Container Runtime](https://github.com/containerd/containerd) 1.2.9
+* [coredns](https://github.com/coredns/coredns) v1.6.3
+* [cni](https://github.com/containernetworking/cni) v0.7.1
+* [etcd](https://github.com/coreos/etcd) v3.4.0
 
 ## Labs
 

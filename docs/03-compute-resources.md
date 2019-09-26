@@ -125,29 +125,37 @@ openstack security group list -f table -c ID -c Name
 +--------------------------------------+----------------------------------------+
 | ID                                   | Name                                   |
 +--------------------------------------+----------------------------------------+
-| 283e6cf0-031d-46f8-b13c-d08556b1876e | kubernetes-the-hard-way-allow-internal |
-| 665ce130-e098-4284-b784-319db7a6855f | kubernetes-the-hard-way-allow-external |
+| 074fd87a-ca28-4eb2-8abb-babe039fb739 | kubernetes-the-hard-way-allow-internal |
+| b25f2854-fac7-4227-b9bc-00d83fb295cf | default                                |
+| e4d6d4ea-dfdb-4e78-809f-c37b2cef7d91 | kubernetes-the-hard-way-allow-external |
 +--------------------------------------+----------------------------------------+
 ```
+
 ### Images
 To be able to create instances, an image should be provided. Depending on the
 OpenStack environment an image catalog can be provided. In this guide we will
-use CentOS as the base operating system. Follow the nexts steps to upload a new
-CentOS image:
+use CentOS 7 as the base operating system. Follow the next steps to upload a new
+CentOS 7 image:
 
-Download the latest CentOS Generic Cloud image (at the time of writting this guide, 1804)
+Download the latest CentOS 7 Generic Cloud image (at the time of writing this guide, 1907)
 
 ```
-wget http://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud-1804_02.raw.tar.gz
-tar xzvf CentOS-7-x86_64-GenericCloud-1804_02.raw.tar.gz
+wget http://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud-1907.raw.tar.gz
+tar xzvf CentOS-7-x86_64-GenericCloud-1907.raw.tar.gz
 ```
 
 Upload it to the Glance service:
 
 ```
-openstack image create CentOS-7-x86_64-GenericCloud-1804_02 \
+openstack image create CentOS-7-x86_64-GenericCloud-1907 \
     --disk-format=raw \
-    --container-format=bare < CentOS-7-x86_64-GenericCloud-1804_02.raw
+    --container-format=bare < CentOS-7-x86_64-GenericCloud-1907.raw
+```
+
+Optionally, clean up the downloaded files:
+
+```
+rm -f CentOS-7-x86_64-GenericCloud-1907.raw CentOS-7-x86_64-GenericCloud-1907.raw.tar.gz
 ```
 
 ### DNS
@@ -183,12 +191,12 @@ Create an instance to host the DNS service. In this case the CentOS image is
 used.
 
 ```
-export DOMAIN='k8s.lan'
+DOMAIN="k8s.lan"
 openstack server create \
     --nic net-id=$(openstack network show kubernetes-the-hard-way -f value -c id),v4-fixed-ip=10.240.0.100 \
     --security-group=kubernetes-the-hard-way-allow-dns \
     --flavor m1.small \
-    --image CentOS-7-x86_64-GenericCloud-1804_02 \
+    --image CentOS-7-x86_64-GenericCloud-1907 \
     --key-name k8s-the-hard-way \
     dns.${DOMAIN}
 ```
@@ -209,15 +217,15 @@ instance previously created.
 First, connect to the instance:
 
 ```
-export DNS_EXTERNAL_IP=$(openstack server show dns.${DOMAIN} -f value -c addresses | awk '{ print $2 }')
+DNS_EXTERNAL_IP=$(openstack server show dns.${DOMAIN} -f value -c addresses | awk '{ print $2 }')
 ssh -i ~/.ssh/k8s.pem centos@${DNS_EXTERNAL_IP}
 ```
 
 Configure network resolution and install named:
 
 ```
-export DOMAIN='k8s.lan'
-export UPSTREAM_DNS=$(awk '/nameserver/ { print $2 }' /etc/resolv.conf)
+DOMAIN="k8s.lan"
+UPSTREAM_DNS=$(awk '/nameserver/ { print $2 }' /etc/resolv.conf | head -n1)
 sudo tee -a /etc/sysconfig/network-scripts/ifcfg-eth0 << EOF
 DNS1=${UPSTREAM_DNS}
 PEERDNS=no
@@ -278,7 +286,7 @@ sudo rndc-confgen -a -c /etc/named/update.key -k update-key -r /dev/urandom
 sudo chown root.named /etc/named/update.key
 sudo chmod 640 /etc/named/update.key
 
-export INTERNAL_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
+INTERNAL_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
 sudo tee /var/named/dynamic/zone.db << EOF
 \$ORIGIN .
 \$TTL 300	; 5 minutes
@@ -293,6 +301,7 @@ ${DOMAIN} IN SOA dns.${DOMAIN}. admin.${DOMAIN}. (
 \$ORIGIN ${DOMAIN}.
 \$TTL 3600	; 1 hour
 dns          A ${INTERNAL_IP}
+k8sosp       A 10.240.0.200
 controller-0 A 10.240.0.10
 controller-1 A 10.240.0.11
 controller-2 A 10.240.0.12
@@ -321,6 +330,29 @@ Verify it is working
 dig @${INTERNAL_IP} ${DOMAIN} axfr
 ```
 
+> output
+
+```
+; <<>> DiG 9.11.4-P2-RedHat-9.11.4-9.P2.el7 <<>> @10.240.0.100 k8s.lan axfr
+; (1 server found)
+;; global options: +cmd
+k8s.lan.		300	IN	SOA	dns.k8s.lan. admin.k8s.lan. 1 28800 3600 604800 86400
+k8s.lan.		300	IN	NS	dns.k8s.lan.
+controller-0.k8s.lan.	3600	IN	A	10.240.0.10
+controller-1.k8s.lan.	3600	IN	A	10.240.0.11
+controller-2.k8s.lan.	3600	IN	A	10.240.0.12
+dns.k8s.lan.		3600	IN	A	10.240.0.100
+k8sosp.k8s.lan.		3600	IN	A	10.240.0.200
+worker-0.k8s.lan.	3600	IN	A	10.240.0.20
+worker-1.k8s.lan.	3600	IN	A	10.240.0.21
+worker-2.k8s.lan.	3600	IN	A	10.240.0.22
+k8s.lan.		300	IN	SOA	dns.k8s.lan. admin.k8s.lan. 1 28800 3600 604800 86400
+;; Query time: 1 msec
+;; SERVER: 10.240.0.100#53(10.240.0.100)
+;; WHEN: mié sep 25 10:22:04 UTC 2019
+;; XFR size: 10 records (messages 1, bytes 310)
+```
+
 Finally, update all packages to latest version and reboot the instance just in
 case:
 
@@ -334,6 +366,7 @@ After installing the DNS service, modify the private subnet to use that DNS
 service:
 
 ```
+DOMAIN="k8s.lan"
 DNS_INTERNAL_IP=$(openstack server show dns.${DOMAIN} -f value -c addresses | awk -F'[=,]' '{print $2}')
 openstack subnet set --dns-nameserver ${DNS_INTERNAL_IP} kubernetes
 ```
@@ -343,17 +376,16 @@ In order to have a proper Kubernetes high available environment, a Load balancer
 is required to distribute the API load. If not using LBaaS, you can create an
 instance and setup a proper Load balancer following the next instructions.
 
-Create an instance to host the load balancer service. In this case the CentOS image is
-used.
+Create an instance to host the load balancer service. In this case the CentOS image is used.
 
 ```
-export DOMAIN='k8s.lan'
+DOMAIN="k8s.lan"
 openstack server create \
   --nic net-id=$(openstack network show kubernetes-the-hard-way -f value -c id),v4-fixed-ip=10.240.0.200 \
   --security-group kubernetes-the-hard-way-allow-internal \
   --security-group kubernetes-the-hard-way-allow-external \
   --flavor m1.small \
-  --image CentOS-7-x86_64-GenericCloud-1804_02 \
+  --image CentOS-7-x86_64-GenericCloud-1907 \
   --key-name k8s-the-hard-way \
   k8sosp.${DOMAIN}
 ```
@@ -370,14 +402,14 @@ The following steps shows how to install a load balancer service using HAProxy i
 First, connect to the instance:
 
 ```
-export LB_EXTERNAL_IP=$(openstack server show k8sosp.${DOMAIN} -f value -c addresses | awk '{ print $2 }')
+LB_EXTERNAL_IP=$(openstack server show k8sosp.${DOMAIN} -f value -c addresses | awk '{ print $2 }')
 ssh -i ~/.ssh/k8s.pem centos@${LB_EXTERNAL_IP}
 ```
 
-Install and configure HAProxy
+Install and configure HAProxy:
 
 ```
-export DOMAIN='k8s.lan'
+DOMAIN="k8s.lan"
 sudo yum install -y haproxy
 
 sudo tee /etc/haproxy/haproxy.cfg << EOF
@@ -417,6 +449,7 @@ listen stats :9000
 
 frontend  main *:6443
     default_backend mgmt6443
+    option tcplog
 
 backend mgmt6443
     balance source
@@ -456,42 +489,6 @@ sudo yum update -y
 sudo reboot
 ```
 
-### Add Load balancer to DNS
-
-Now that the load balancer has been created, the DNS zone needs to be updated
-to add the load balancer.
-
-Connect to the DNS instance:
-
-```
-openstack server show k8sosp.${DOMAIN} -f value -c addresses | awk -F'[=,]' '{print $2}' > lb_internal_ip
-export DNS_EXTERNAL_IP=$(openstack server show dns.${DOMAIN} -f value -c addresses | awk '{ print $2 }')
-scp -i ~/.ssh/k8s.pem lb_internal_ip centos@${DNS_EXTERNAL_IP}:lb_internal_ip
-ssh -i ~/.ssh/k8s.pem centos@${DNS_EXTERNAL_IP}
-```
-
-Update the zone:
-
-```
-export DOMAIN="k8s.lan"
-export INTERNAL_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
-export LB_INTERNAL_IP=$(cat lb_internal_ip)
-rm -f lb_internal_ip
-sudo nsupdate -k /etc/named/update.key <<EOF
-server ${INTERNAL_IP}
-zone ${DOMAIN}
-update add k8sosp.${DOMAIN} 3600 A ${LB_INTERNAL_IP}
-send
-quit
-EOF
-```
-
-Verify it:
-
-```
-dig @${INTERNAL_IP} ${DOMAIN} axfr
-```
-
 ## Compute Instances
 
 Each compute instance will be provisioned with a fixed private IP address to simplify the Kubernetes bootstrapping process.
@@ -501,13 +498,13 @@ Each compute instance will be provisioned with a fixed private IP address to sim
 Create three compute instances which will host the Kubernetes control plane:
 
 ```
-export DOMAIN="k8s.lan"
+DOMAIN="k8s.lan"
 for i in 0 1 2;
 do
   openstack server create \
     --nic net-id=$(openstack network show kubernetes-the-hard-way -f value -c id),v4-fixed-ip=10.240.0.1${i} \
     --flavor m1.medium \
-    --image CentOS-7-x86_64-GenericCloud-1804_02 \
+    --image CentOS-7-x86_64-GenericCloud-1907 \
     --key-name k8s-the-hard-way \
     --security-group kubernetes-the-hard-way-allow-external \
     --security-group kubernetes-the-hard-way-allow-internal \
@@ -525,13 +522,13 @@ Each worker instance requires a pod subnet allocation from the Kubernetes cluste
 Create three compute instances which will host the Kubernetes worker nodes:
 
 ```
-export DOMAIN="k8s.lan"
+DOMAIN="k8s.lan"
 for i in 0 1 2;
 do
   openstack server create \
     --nic net-id=$(openstack network show kubernetes-the-hard-way -f value -c id),v4-fixed-ip=10.240.0.2${i} \
     --flavor m1.medium \
-    --image CentOS-7-x86_64-GenericCloud-1804_02 \
+    --image CentOS-7-x86_64-GenericCloud-1907 \
     --key-name k8s-the-hard-way \
     --property pod-cidr=10.200.${i}.0/24 \
     --security-group kubernetes-the-hard-way-allow-external \
@@ -566,8 +563,30 @@ openstack server list -f table -c Name -c Networks -c Flavor -c Status
 +----------------------+--------+-----------------------------------------------+-----------+
 ```
 
-> As the DNS server is created internally, it can be a good idea to configure an
-external DNS server to use the public ips to avoid using IPs to connect to the
-instances (or the local /etc/hosts in your workstation)
+As the DNS server is created internally, it is a good idea to configure an
+external DNS server to use the public IPs to avoid using IPs to connect to the
+instances.
+
+In this case for the sake of simplicity, we are using the local /etc/hosts in
+the local workstation:
+
+```
+openstack server list -f value -c Networks -c Name | sed -e 's/kubernetes-the-hard-way=.*, //g' | awk ' { t = $1; $1 = $2; $2 = t; print; } ' | sudo tee -a /etc/hosts
+```
+
+# Configuring SSH Access
+
+SSH will be used to configure the controller and worker instances. The `openstack create` command contained a specific ssh key that has been generated
+previously and has been injected in the instances in order to be able to
+connect to them without any password prompt.
+
+To avoid asking to add the key to the `~/.ssh/known_hosts` file, the following
+snippet will do this up front:
+
+```
+for host in $(openstack server list -f value -c Name); do
+  ssh-keyscan -H ${host} >> ~/.ssh/known_hosts
+done
+```
 
 Next: [Provisioning a CA and Generating TLS Certificates](04-certificate-authority.md)
