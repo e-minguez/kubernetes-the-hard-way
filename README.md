@@ -1,4 +1,4 @@
-# Kubernetes The Hard Way (OSP edition)
+# Kubernetes The Hard Way (OpenStack edition)
 
 This tutorial walks you through setting up Kubernetes the hard way. This guide
 is not for people looking for a fully automated command to bring up a
