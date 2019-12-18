@@ -16,17 +16,15 @@ It is required to allow those IPs for traffic communication:
 openstack port list --device-owner=compute:None -c ID -f value | xargs -tI@ openstack port set @ --allowed-address ip-address=10.200.0.0/16 --allowed-address ip-address=10.32.0.0/24
 ```
 
-## Label nodes
-
-Kube-router requires a specific annotation (or other methods) to gather the pod-cidr on each node:
-
-```
-for i in 0 1 2; do
-  kubectl annotate node/worker-${i}.${DOMAIN} "kube-router.io/pod-cidr=10.200.${i}.0/24"
-done
-```
-
 ## Deploy kube-router
+
+Each worker has the own pod subnet which was allocated by the Controller Manager. Then kube-route uses it to configure container networking.
+
+> Alternatively, you can also specify the pod subnet for each node with a specific anotation:
+> ```
+>  kubectl annotate node/$(hostname -s) "kube-router.io/pod-cidr=<POD_CIDR>"
+> ```
+> The `POD_CIDR` should in the range of `cluster-cidr`, and no conflict with other pods.
 
 Then, deploy `kube-router` pods:
 

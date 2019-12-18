@@ -115,6 +115,12 @@ Move the `kube-controller-manager` kubeconfig into place:
 sudo mv kube-controller-manager.kubeconfig /var/lib/kubernetes/
 ```
 
+Each worker instance requires a pod subnet allocation from the Kubernetes cluster CIDR range. The pod subnet allocation will be used to configure container networking by `kube-route` in a later exercise.
+
+> The Kubernetes cluster CIDR range is defined by the Controller Manager's `--cluster-cidr` flag. In this tutorial the cluster CIDR range will be set to `10.200.0.0/16`, which supports 254 subnets.
+
+> The Controller Manager allocate pod subnet by the cluster CIDR range definition if the `--allocate-node-cidrs` flag is enabled.
+
 Create the `kube-controller-manager.service` systemd unit file:
 
 ```
