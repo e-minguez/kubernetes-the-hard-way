@@ -158,7 +158,6 @@ EOF
 Create the `kubelet-config.yaml` configuration file:
 
 ```
-POD_CIDR=$(curl -s http://169.254.169.254/openstack/latest/meta_data.json | jq -r '.meta."pod-cidr"')
 SHORTNAME=$(hostname -s)
 
 cat <<EOF | sudo tee /var/lib/kubelet/kubelet-config.yaml
@@ -176,7 +175,6 @@ authorization:
 clusterDomain: "cluster.local"
 clusterDNS:
   - "10.32.0.10"
-podCIDR: "${POD_CIDR}"
 resolvConf: "/etc/resolv.conf"
 runtimeRequestTimeout: "15m"
 tlsCertFile: "/var/lib/kubelet/${SHORTNAME}.pem"

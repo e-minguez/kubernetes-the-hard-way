@@ -515,10 +515,6 @@ done
 
 ### Kubernetes Workers
 
-Each worker instance requires a pod subnet allocation from the Kubernetes cluster CIDR range. The pod subnet allocation will be used to configure container networking in a later exercise. The `pod-cidr` instance metadata will be used to expose pod subnet allocations to compute instances at runtime.
-
-> The Kubernetes cluster CIDR range is defined by the Controller Manager's `--cluster-cidr` flag. In this tutorial the cluster CIDR range will be set to `10.200.0.0/16`, which supports 254 subnets.
-
 Create three compute instances which will host the Kubernetes worker nodes:
 
 ```
@@ -530,7 +526,6 @@ do
     --flavor m1.medium \
     --image CentOS-7-x86_64-GenericCloud-1907 \
     --key-name k8s-the-hard-way \
-    --property pod-cidr=10.200.${i}.0/24 \
     --security-group kubernetes-the-hard-way-allow-external \
     --security-group kubernetes-the-hard-way-allow-internal \
     worker-${i}.${DOMAIN};
