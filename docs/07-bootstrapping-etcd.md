@@ -8,15 +8,15 @@ Fix the controllers hostnames just in case:
 
 ```
 for instance in controller-0 controller-1 controller-2; do
-  ssh -i ~/.ssh/k8s.pem centos@${instance}.${DOMAIN} sudo hostnamectl set-hostname ${instance}.${DOMAIN}
-  ssh -i ~/.ssh/k8s.pem centos@${instance}.${DOMAIN} hostname
+  ssh ${instance}.${DOMAIN} sudo hostnamectl set-hostname ${instance}.${DOMAIN}
+  ssh ${instance}.${DOMAIN} hostname
 done
 ```
 
 The commands in this lab must be run on each controller instance: `controller-0`, `controller-1`, and `controller-2`. Login to each controller:
 
 ```
-ssh -i ~/.ssh/k8s.pem centos@controller-0.${DOMAIN}
+ssh controller-0.${DOMAIN}
 ```
 
 ### Running commands in parallel with tmux

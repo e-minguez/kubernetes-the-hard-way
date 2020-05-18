@@ -36,7 +36,7 @@ Copy the `encryption-config.yaml` encryption config file to each controller inst
 
 ```
 for instance in controller-0 controller-1 controller-2; do
-  scp -i ~/.ssh/k8s.pem encryption-config.yaml centos@${instance}.${DOMAIN}:
+  scp encryption-config.yaml ${instance}.${DOMAIN}:
 done
 ```
 

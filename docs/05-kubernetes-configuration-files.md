@@ -161,7 +161,7 @@ Copy the appropriate `kubelet` kubeconfig file to each worker instance:
 
 ```
 for instance in worker-0 worker-1 worker-2; do
-  scp -i ~/.ssh/k8s.pem ${instance}.kubeconfig centos@${instance}.${DOMAIN}:
+  scp ${instance}.kubeconfig ${instance}.${DOMAIN}:
 done
 ```
 
@@ -169,7 +169,7 @@ Copy the appropriate `kube-controller-manager` and `kube-scheduler` kubeconfig f
 
 ```
 for instance in controller-0 controller-1 controller-2; do
-  scp -i ~/.ssh/k8s.pem admin.kubeconfig kube-controller-manager.kubeconfig kube-scheduler.kubeconfig centos@${instance}.${DOMAIN}:
+  scp admin.kubeconfig kube-controller-manager.kubeconfig kube-scheduler.kubeconfig ${instance}.${DOMAIN}:
 done
 ```
 

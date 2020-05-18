@@ -7,7 +7,7 @@ In this lab you will bootstrap the Kubernetes control plane across three compute
 The commands in this lab must be run on each controller instance: `controller-0`, `controller-1`, and `controller-2`. Login to each controller instance:
 
 ```
-ssh -i ~/.ssh/k8s.pem centos@controller-0.${DOMAIN}
+ssh controller-0.${DOMAIN}
 ```
 
 ### Running commands in parallel with tmux
@@ -244,7 +244,7 @@ In this section you will configure RBAC permissions to allow the Kubernetes API 
 The commands in this section will effect the entire cluster and only need to be run once from one of the controller nodes.
 
 ```
-ssh -i ~/.ssh/k8s.pem centos@controller-0.${DOMAIN}
+ssh controller-0.${DOMAIN}
 ```
 
 Create the `system:kube-apiserver-to-kubelet` [ClusterRole](https://kubernetes.io/docs/admin/authorization/rbac/#role-and-clusterrole) with permissions to access the Kubelet API and perform most common tasks associated with managing pods:
