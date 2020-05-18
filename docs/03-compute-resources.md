@@ -584,4 +584,16 @@ for host in $(openstack server list -f value -c Name); do
 done
 ```
 
+To avoid entering the keyfile and user for each ssh session, add some configuration to your `~/.ssh/config`. Those lines will do this for you:
+
+```
+cat >> ~/.ssh/config<<EOF
+
+Host *.k8s.lan
+    User centos
+    IdentityFile ~/.ssh/k8s.pem
+
+EOF
+```
+
 Next: [Provisioning a CA and Generating TLS Certificates](04-certificate-authority.md)

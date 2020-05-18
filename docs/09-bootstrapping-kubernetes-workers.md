@@ -10,15 +10,15 @@ Fix the workers hostnames just in case:
 
 ```
 for instance in worker-0 worker-1 worker-2; do
-  ssh -i ~/.ssh/k8s.pem centos@${instance}.${DOMAIN} sudo hostnamectl set-hostname ${instance}.${DOMAIN}
-  ssh -i ~/.ssh/k8s.pem centos@${instance}.${DOMAIN} hostname
+  ssh ${instance}.${DOMAIN} sudo hostnamectl set-hostname ${instance}.${DOMAIN}
+  ssh ${instance}.${DOMAIN} hostname
 done
 ```
 
 The commands in this lab must be run on each worker instance: `worker-0`, `worker-1`, and `worker-2`. Login to each worker instance:
 
 ```
-ssh -i ~/.ssh/k8s.pem centos@worker-0.${DOMAIN}
+ssh worker-0.${DOMAIN}
 ```
 
 ### Running commands in parallel with tmux
@@ -230,7 +230,7 @@ EOF
 List the registered Kubernetes nodes:
 
 ```
-ssh -i ~/.ssh/k8s.pem centos@controller-0.${DOMAIN} \
+ssh controller-0.${DOMAIN} \
   "kubectl get nodes --kubeconfig admin.kubeconfig"
 ```
 

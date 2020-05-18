@@ -349,7 +349,7 @@ Copy the appropriate certificates and private keys to each worker instance:
 
 ```
 for instance in worker-0 worker-1 worker-2; do
-  scp -i ~/.ssh/k8s.pem ca.pem ${instance}-key.pem ${instance}.pem centos@${instance}.${DOMAIN}:
+  scp ca.pem ${instance}-key.pem ${instance}.pem ${instance}.${DOMAIN}:
 done
 ```
 
@@ -357,8 +357,8 @@ Copy the appropriate certificates and private keys to each controller instance:
 
 ```
 for instance in controller-0 controller-1 controller-2; do
-  scp -i ~/.ssh/k8s.pem ca.pem ca-key.pem kubernetes-key.pem kubernetes.pem \
-    service-account-key.pem service-account.pem centos@${instance}.${DOMAIN}:
+  scp ca.pem ca-key.pem kubernetes-key.pem kubernetes.pem \
+    service-account-key.pem service-account.pem ${instance}.${DOMAIN}:
 done
 ```
 
